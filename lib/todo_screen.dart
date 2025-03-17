@@ -12,6 +12,7 @@ class TodoScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('Simple riverpod to do app'),
         backgroundColor: Colors.teal,
+        centerTitle: true,
       ),
       backgroundColor: Colors.teal,
       body: Column(
