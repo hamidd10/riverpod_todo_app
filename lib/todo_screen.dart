@@ -11,7 +11,9 @@ class TodoScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Simple riverpod to do app'),
+        backgroundColor: Colors.teal,
       ),
+      backgroundColor: Colors.teal,
       body: Column(
         children: [
           Padding(
