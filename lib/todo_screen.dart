@@ -7,14 +7,49 @@ class TodoScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final todos = ref.watch(todoProvider);
     final textController = TextEditingController();
+    final editTextController = TextEditingController();
+
+
+    void _showEditDialog(Todo todo) {
+      editTextController.text = todo.text;
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("update"),
+            content: TextField(
+              controller: editTextController,
+              decoration: InputDecoration(
+                hintText: "insert your text",
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("cancel"),
+              ),
+              TextButton(
+                onPressed: () {
+                  ref.read(todoProvider.notifier).updateTodo(
+                    todo.id,
+                    editTextController.text,
+                  );
+                  Navigator.pop(context);
+                },
+                child: Text("save"),
+              ),
+            ],
+          );
+        },
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Simple riverpod to do app'),
-        backgroundColor: Colors.teal,
-        centerTitle: true,
+        title: Text("riverpod TODO app"),
       ),
-      backgroundColor: Colors.teal,
       body: Column(
         children: [
           Padding(
@@ -22,16 +57,13 @@ class TodoScreen extends ConsumerWidget {
             child: TextField(
               controller: textController,
               decoration: InputDecoration(
-                labelText: 'Add your new task',
+                labelText: "new work",
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () {
                     if (textController.text.isNotEmpty) {
-                      ref.read(todoProvider.notifier).state = [
-                        ...todos,
-                        textController.text,
-                      ];
+                      ref.read(todoProvider.notifier).addTodo(textController.text);
                       textController.clear();
                     }
                   },
@@ -39,22 +71,52 @@ class TodoScreen extends ConsumerWidget {
               ),
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
-                  ref.read(todoProvider.notifier).state = [
-                    ...todos,
-                    value,
-                  ];
+                  ref.read(todoProvider.notifier).addTodo(value);
                   textController.clear();
                 }
               },
             ),
           ),
-          // List of todos
+
           Expanded(
             child: ListView.builder(
               itemCount: todos.length,
               itemBuilder: (context, index) {
+                final todo = todos[index];
                 return ListTile(
-                  title: Text(todos[index]),
+                  leading: Checkbox(
+                    value: todo.isCompleted,
+                    onChanged: (value) {
+                      ref.read(todoProvider.notifier).toggleTodo(todo.id);
+                    },
+                  ),
+                  title: Text(
+                    todo.text,
+                    style: TextStyle(
+                      decoration: todo.isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                    ),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                    // edit button
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          _showEditDialog(todo);
+                        },
+                      ),
+                      //delete button
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () {
+                          ref.read(todoProvider.notifier).deleteTodo(todo.id);
+                        },
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
